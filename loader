@@ -1,0 +1,289 @@
+local Player = game.Players.LocalPlayer
+
+Player.Chatted:Connect (function(cht)
+	if cht:match(".guns") then
+		for i,v in pairs (workspace.Prison_ITEMS.giver:GetChildren()) do
+			
+			lol = workspace.Remote.ItemHandler:InvokeServer(v.ITEMPICKUP)
+			print (lol)
+			end
+	elseif cht:match(".no doors") then
+		game.Workspace.Doors:Destroy()
+	end
+	if cht:match(".no fences") then
+	game.Workspace.Prison_Fences:Destroy()
+	end
+	if cht:match(".noclip") then
+		game:GetService("StarterGui"):SetCore("SendNotification", {
+			Title = "Info:";
+			Text = "Press E To turn noclip off and then on again!";
+		})
+		
+		local StealthMode = true -- If game has an anticheat that checks the logs
+
+		local Indicator
+
+		if not StealthMode then
+			local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+			print("NOCLIP: Press E to Activate")
+			Indicator = Instance.new("TextLabel", ScreenGui)
+			Indicator.AnchorPoint = Vector2.new(0, 1)
+			Indicator.Position = UDim2.new(0, 0, 1, 0)
+			Indicator.Size = UDim2.new(0, 200, 0, 50)
+			Indicator.BackgroundTransparency = 1
+			Indicator.TextScaled = true
+			Indicator.TextStrokeTransparency = 0
+			Indicator.TextColor3 = Color3.new(0, 0, 0)
+			Indicator.TextStrokeColor3 = Color3.new(1, 1, 1)
+			Indicator.Text = "Noclip: Enabled"
+		end
+
+		local noclip = true
+		local player = game.Players.LocalPlayer
+		local character = player.Character or player.CharacterAdded:Wait()
+
+		local mouse = player:GetMouse()
+
+		mouse.KeyDown:Connect(function(key)
+			if key == "e" then
+				noclip = not noclip
+
+				if not StealthMode then
+					Indicator.Text = "Noclip: " .. (noclip and "Enabled" or "Disabled")
+				end
+			end
+		end)
+
+		while true do
+			player = game.Players.LocalPlayer
+			character = player.Character
+
+			if noclip then
+				for _, v in pairs(character:GetDescendants()) do
+					pcall(function()
+						if v:IsA("BasePart") then
+							v.CanCollide = false
+						end
+					end)
+				end
+			end
+
+			game:GetService("RunService").Stepped:wait()
+		end
+		
+		
+		
+		
+	elseif cht:match(".fly") then
+			game:GetService("StarterGui"):SetCore("SendNotification", {
+				Title = "Info:";
+				Text = "Press X to fly!";
+			})
+			
+			repeat wait()
+			until game.Players.LocalPlayer and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:findFirstChild("Torso") and game.Players.LocalPlayer.Character:findFirstChild("Humanoid")
+			local mouse = game.Players.LocalPlayer:GetMouse()
+			repeat wait() until mouse
+			local plr = game.Players.LocalPlayer
+			local torso = plr.Character.Torso
+			local flying = true
+			local deb = true
+			local ctrl = {f = 0, b = 0, l = 0, r = 0}
+			local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+			local maxspeed = 500
+			local speed = 0
+
+			function Fly()
+				local bg = Instance.new("BodyGyro", torso)
+				bg.P = 9e4
+				bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+				bg.cframe = torso.CFrame
+				local bv = Instance.new("BodyVelocity", torso)
+				bv.velocity = Vector3.new(0,0.1,0)
+				bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+				repeat wait()
+					plr.Character.Humanoid.PlatformStand = false
+					if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+						speed = speed+125.0+(speed/maxspeed)
+						if speed > maxspeed then
+							speed = maxspeed
+						end
+					elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+						speed = speed-250
+						if speed < 0 then
+							speed = 0
+						end
+					end
+					if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+						bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+						lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+					elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+						bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+					else
+						bv.velocity = Vector3.new(0,0.1,0)
+					end
+					bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+				until not flying
+				ctrl = {f = 0, b = 0, l = 0, r = 0}
+				lastctrl = {f = 0, b = 0, l = 0, r = 0}
+				speed = 0
+				bg:Destroy()
+				bv:Destroy()
+				plr.Character.Humanoid.PlatformStand = false
+			end
+			mouse.KeyDown:connect(function(key)
+				if key:lower() == "x" then
+					if flying then flying = false
+					else
+						flying = true
+						Fly()
+					end
+				elseif key:lower() == "w" then
+					ctrl.f = 1
+				elseif key:lower() == "s" then
+					ctrl.b = -1
+				elseif key:lower() == "a" then
+					ctrl.l = -1
+				elseif key:lower() == "d" then
+					ctrl.r = 1
+				end
+			end)
+			mouse.KeyUp:connect(function(key)
+				if key:lower() == "w" then
+					ctrl.f = 0
+				elseif key:lower() == "s" then
+					ctrl.b = 0
+				elseif key:lower() == "a" then
+					ctrl.l = 0
+				elseif key:lower() == "d" then
+					ctrl.r = 0
+				end
+			end)
+			Fly()
+		end
+		if cht:match(".killaura") then
+			game:GetService("StarterGui"):SetCore("SendNotification", {
+				Title = "Info:";
+				Text = "Press Z To Kill People Near You!";
+			})
+
+			plr = game:service'Players'.LocalPlayer
+			char = plr.Character
+			mouse = plr:GetMouse()
+			on = false
+
+			mouse.KeyDown:connect(function(key)
+				if key == "z" then
+					on = true
+				end
+			end)
+
+			mouse.KeyUp:connect(function(key)
+				if key == "z" then
+					on = false
+				end
+			end)
+
+			while wait(0.1) do
+				for i, b in pairs(game.Players:GetChildren()) do
+					if b.Name ~= plr.Name and not b:IsFriendsWith(plr.UserId) and on then
+						for i = 1, 10 do
+							game.ReplicatedStorage.meleeEvent:FireServer(b)
+						end
+					end
+				end
+		end
+	elseif cht:match(".yard") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(793.721741, 98.1899185, 2521.64038, 0.999861658, 7.64812569e-08, -0.0166315082, -7.68583703e-08, 1, -2.20352838e-08, 0.0166315082, 2.33105055e-08, 0.999861658)
+	end
+	if cht:match(".base") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-977.695496, 109.123901, 2067.75171, -0.00830560084, -7.90700838e-09, -0.999965489, 9.66998148e-10, 1, -7.91531285e-09, 0.999965489, -1.03270614e-09, -0.00830560084)
+	end
+	if cht:match(".prison") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(906.399658, 99.9899826, 2388.50073, -1, -6.81847112e-09, -6.01408571e-14, -6.81847112e-09, 1, 2.06747508e-08, 5.99998838e-14, 2.06747508e-08, -1)
+	end	
+	if cht:match(".prisoncells") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(917.079529, 99.9899673, 2449.71118, 0.999957979, 6.47605845e-08, 0.00916831847, -6.46161027e-08, 1, -1.60548055e-08, -0.00916831847, 1.54617101e-08, 0.999957979)
+	end
+	if cht:match(".cafeteria") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(920.611755, 99.9899368, 2290.1748, -0.999999821, -5.85201256e-08, -0.000610145798, -5.85357789e-08, 1, 2.56383554e-08, 0.000610145798, 2.56740673e-08, -0.999999821)
+	end
+	if cht:match(".guardroom") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(837.082825, 99.9899826, 2257.83887, -0.999364734, -1.8327615e-08, -0.0356389545, -1.82082491e-08, 1, -3.67387054e-09, 0.0356389545, -3.02261371e-09, -0.999364734)
+	end
+	if cht:match(".safespot1") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-974.070923, 95.537056, 2123.81348, 0.0166460648, -1.62934928e-08, -0.999861419, 1.58758917e-09, 1, -1.62693183e-08, 0.999861419, -1.31654909e-09, 0.0166460648)
+	end
+	if cht:match(".safespot2") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-974.595154, 95.5365982, 2181.68213, 0.0166377667, 1.25865993e-08, -0.999861598, -8.16820105e-08, 1, 1.12291474e-08, 0.999861598, 8.14838756e-08, 0.0166377667)
+	end
+	if cht:match(".safespot3") then
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-930.960999, 95.6430359, 2152.04492, 0.999127269, 5.08163112e-08, 0.0417690724, -4.82949893e-08, 1, -6.13724467e-08, -0.0417690724, 5.9301648e-08, 0.999127269)
+	end
+	if cht:match(".neutral") then
+		workspace.Remote.TeamEvent:FireServer("Medium stone grey")
+	end
+	if cht:match(".inmate") then
+		workspace.Remote.TeamEvent:FireServer("Bright orange")
+	end
+	if cht:match(".criminal") then
+		LP = game.Players.LocalPlayer
+
+		RE = LP.Character.HumanoidRootPart.Position
+		LP.Character.HumanoidRootPart.CFrame = CFrame.new(-919.958, 95.327, 2138.189)
+		wait(0.075)
+		LP.Character.HumanoidRootPart.CFrame = CFrame.new(RE)
+	end
+	if cht:match(".mod m4") then
+		S = game.Players.LocalPlayer.Backpack["M4A1"].GunStates
+		rs = require(S)
+		for i,v in next, rs do 
+			rs.Spread = 0
+			rs.FireRate = 0
+			rs.CurrentAmmo = math.huge
+			rs.Bullets = 30
+			rs.AutoFire = true
+		end
+	end
+	if cht:match(".mod ak") then
+		S = game.Players.LocalPlayer.Backpack["AK-47"].GunStates
+		rs = require(S)
+		for i,v in next, rs do 
+			rs.Spread = 0
+			rs.FireRate = 0
+			rs.CurrentAmmo = math.huge
+			rs.Bullets = 30
+			rs.AutoFire = true
+		end
+	end
+	if cht:match(".mod shotgun") then
+		S = game.Players.LocalPlayer.Backpack["Remington 870"].GunStates
+		rs = require(S)
+		for i,v in next, rs do 
+			rs.Spread = 0
+			rs.FireRate = 0
+			rs.CurrentAmmo = math.huge
+			rs.Bullets = 30
+			rs.AutoFire = true
+		end
+	end
+	if cht:match(".mod m9") then
+		S = game.Players.LocalPlayer.Backpack["M9"].GunStates
+		rs = require(S)
+		for i,v in next, rs do 
+			rs.Spread = 0
+			rs.FireRate = 0
+			rs.CurrentAmmo = math.huge
+			rs.Bullets = 30
+			rs.AutoFire = true
+		end
+	end
+	if cht:match(".click arrest") then
+		local mouse = game.Players.LocalPlayer:GetMouse()
+		local arrestEvent = game.Workspace.Remote.arrest
+		mouse.Button1Down:connect(function()
+			local obj = mouse.Target
+			local response = arrestEvent:InvokeServer(obj)
+		end)
+	end
+end)
